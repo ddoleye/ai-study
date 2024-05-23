@@ -5,7 +5,7 @@ from openai import OpenAI
 import os
 import tempfile
 import base64
-from pydub import AudioSegment
+# from pydub import AudioSegment
     
 # .env
 load_dotenv()
@@ -17,13 +17,13 @@ client = OpenAI()
 def tmp(ext):
     return tempfile.NamedTemporaryFile(prefix='temp_', suffix='.' + ext, delete=False)
 
-# m4a 를 BadRequest 로 반환해서
-def mp3(input_file, output_file):
-    # m4a 파일 불러오기
-    audio = AudioSegment.from_file(input_file, format="m4a")
+# # m4a 를 BadRequest 로 반환해서
+# def mp3(input_file, output_file):
+#     # m4a 파일 불러오기
+#     audio = AudioSegment.from_file(input_file, format="m4a")
 
-    # mp3로 변환
-    audio.export(output_file, format="mp3")
+#     # mp3로 변환
+#     audio.export(output_file, format="mp3")
 
 def speech2text(audio):
     transcription = client.audio.transcriptions.create(
@@ -49,7 +49,7 @@ def summarize(txt):
         model="gpt-4o",
         messages=[
             {"role": "system", "content": "당신은 유능한 비서입니다."},
-            {"role": "user", "content": "다음 내용을 요약해서 보여주고 내용에서 시간을 포함하는 일정과 해야 할일이 있으면 정리해서 보여주세요"},
+            {"role": "user", "content": "다음 내용을 요약해서 보여주고 내용에서 시간을 포함하는 일정과 해야 할일이 있으면 정리해서 보여주세요. 없는 경우는 아무런 표시를 하지 않습니다."},
             {"role": "user", "content": txt}
         ]
     )
@@ -61,23 +61,25 @@ st.title("녹음 요약") # title
 # file uploader
 file = st.file_uploader(
     label = "녹음파일을 선택해주세요...", 
-    type = ["mp3", "mp4", "mpeg", "mpga", "m4a", "wav", "webm"]
+    # m4a는 안되고 mp3 만 되는듯
+    type = ["mp3", "mp4"] #, "mpeg", "mpga", "m4a", "wav", "webm"]
 )
 submit = st.button("요약!") # button object
 if submit:
     if file is not None:
         with st.spinner('텍스트 추출...'):
-            if file.name.lower().endswith('.m4a'):
-                target = tmp('mp3');
-                mp3(file, tmp)
-                temp = True
-            else:
-                target = file
-                temp = False
+            # if file.name.lower().endswith('.m4a'):
+            #     target = tmp('mp3');
+            #     mp3(file, tmp)
+            #     temp = True
+            # else:
+            #     target = file
+            #     temp = False
+            target = file
             txt = speech2text(target)
-            if temp:
-                print(f'임시 파일 {target} 삭제')
-                os.remove(target)
+            # if temp:
+            #     print(f'임시 파일 {target} 삭제')
+            #     os.remove(target)
             div = st.container(border=True)
             div.write(txt.text)
 
@@ -90,7 +92,7 @@ if submit:
 st.markdown("--------------------------")
 st.markdown("### 녹음 샘플이 없다면?")
 # 텍스트 입력 받기
-text_input = st.text_area("대화 형식의 텍스트를 입력합니다", """버튼을 클릭하면 쇼핑몰 화면에 추천 상품 목록이 나왔으면 좋겠어요.
+text_input = st.text_area("대화 형식의 텍스트를 입력하여 mp3를 생성합니다", """버튼을 클릭하면 쇼핑몰 화면에 추천 상품 목록이 나왔으면 좋겠어요.
 
 추천은 얼마 만에 완료되어야 하나요? 추천 상품 목록은 어떤 기준으로 정렬되어야 하나요? 얼마나 자주 추천 목록이 갱신되어야 하나요?
 

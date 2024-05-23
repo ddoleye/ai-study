@@ -1,0 +1,5 @@
+ffmpeg
+openai
+python-dotenv
+pydub
+
